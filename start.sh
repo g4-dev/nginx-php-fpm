@@ -13,6 +13,10 @@ chown -Rf nginx.nginx /usr/share/nginx/html
 rm -rf /usr/share/nginx/html/*
 git clone git@github.com:g4-dev/src-ecs.git /usr/share/nginx/html/ \
 cd /usr/share/nginx/html && git reset --hard origin/master
+
 touch update.php && chmod +x update.php
-echo "<?php `git pull origin master && composer -d ./www install -n` ?>" >> update.php
+echo "<?php `git pull origin master \
+composer -d ./www install -n \
+php www/bin/console doctrine:schema:update -f -n` 
+?>" >> update.php
 php -r update.php
