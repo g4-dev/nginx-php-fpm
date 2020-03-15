@@ -106,9 +106,6 @@ RUN rm -rf /tmp/pear \
     && apt-get purge -y --auto-remove $buildDeps \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# install ecs website
-RUN git clone git@github.com:g4-dev/src-ecs.git /tmp/src-ecs && cd /tmp/src-ecs && git reset --hard origin/master
-
 # Supervisor config
 ADD ./supervisord.conf /etc/supervisord.conf
 
@@ -116,7 +113,7 @@ ADD ./supervisord.conf /etc/supervisord.conf
 ADD ./default.conf /etc/nginx/conf.d/default.conf
 
 # Override default nginx welcome page
-COPY /tmp/src-ecs /usr/share/nginx/html
+COPY html /usr/share/nginx/html
 
 # Add Scripts
 ADD ./start.sh /start.sh
