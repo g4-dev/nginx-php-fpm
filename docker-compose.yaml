@@ -1,14 +1,14 @@
 version: '3'
 services:
-  nginx:
+  ecs:
     build: .
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./services/nginx:/etc/nginx/
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
+    container_name: ecs
   certbot:
     image: certbot/certbot
     volumes:

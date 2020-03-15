@@ -79,7 +79,7 @@ RUN buildDeps='curl gcc make autoconf libc-dev zlib1g-dev pkg-config' \
     && sed -i -e "s/variables_order = \"GPCS\"/variables_order = \"EGPCS\"/g" ${php_conf} \
     && sed -i -e "s/;daemonize\s*=\s*yes/daemonize = no/g" /etc/php/7.4/fpm/php-fpm.conf \
     && sed -i -e "s/;catch_workers_output\s*=\s*yes/catch_workers_output = yes/g" ${fpm_conf} \
-    && sed -i -e "s/pm.max_children = 5/pm.max_children = 20/g" ${fpm_conf} \
+    && sed -i -e "s/pm.max_children = 5/pm.max_children = 180/g" ${fpm_conf} \
     && sed -i -e "s/pm.start_servers = 2/pm.start_servers = 60/g" ${fpm_conf} \
     && sed -i -e "s/pm.min_spare_servers = 1/pm.min_spare_servers = 30/g" ${fpm_conf} \
     && sed -i -e "s/pm.max_spare_servers = 3/pm.max_spare_servers = 90/g" ${fpm_conf} \
@@ -111,15 +111,12 @@ ADD ./supervisord.conf /etc/supervisord.conf
 
 # install node js
 RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
-RUN apt-get install -y nodejs
-
-RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add - \
-echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-
-RUN sudo apt-get update && sudo apt-get install yarn
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
+echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+RUN apt-get install -y nodejs yarn
 
 # Override nginx's default config
-ADD ./default.conf /etc/nginx/conf.d/default.conf
+ADD ./services/nginx /etc/nginx/
 
 # Override default nginx welcome page
 COPY html /usr/share/nginx/html
