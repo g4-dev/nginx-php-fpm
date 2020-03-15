@@ -1,13 +1,13 @@
 FROM debian:buster
 
-LABEL maintainer="Colin Wilson colin@wyveo.com"
+LABEL maintainer="Loic Roux loic.roux.404@gmail.com"
 
 # Let the container know that there is no tty
 ENV DEBIAN_FRONTEND noninteractive
 ENV NGINX_VERSION 1.17.7-1~buster
 ENV php_conf /etc/php/7.4/fpm/php.ini
 ENV fpm_conf /etc/php/7.4/fpm/pool.d/www.conf
-ENV COMPOSER_VERSION 1.9.1
+ENV COMPOSER_VERSION 1.9.3
 
 # Install Basic Requirements
 RUN buildDeps='curl gcc make autoconf libc-dev zlib1g-dev pkg-config' \
@@ -33,12 +33,12 @@ RUN buildDeps='curl gcc make autoconf libc-dev zlib1g-dev pkg-config' \
     && apt-get update \
     && apt-get install --no-install-recommends --no-install-suggests -q -y \
             apt-utils \
-            nano \
+            vim \
             zip \
             unzip \
+            git \
             python-pip \
             python-setuptools \
-            git \
             libmemcached-dev \
             libmemcached11 \
             libmagickwand-dev \
@@ -54,13 +54,19 @@ RUN buildDeps='curl gcc make autoconf libc-dev zlib1g-dev pkg-config' \
             php7.4-mbstring \
             php7.4-curl \
             php7.4-gd \
+            php7.4-bz2 \
             php7.4-mysql \
             php7.4-zip \
-            php7.4-pgsql \
+            #php7.4-pgsql \
             php7.4-intl \
+            php7.4-xsl \
+            php7.4-igbinary \
             php7.4-xml \
+            php7.4-gmp \
+            php7.4-common \
+            php7.4-xmlrpc \
             php-pear \
-    && pecl -d php_suffix=7.4 install -o -f redis memcached imagick \
+    && pecl -d php_suffix=7.4 install -o -f  memcached imagick apcu \ #redis \
     && mkdir -p /run/php \
     && pip install wheel \
     && pip install supervisor supervisor-stdout \
@@ -68,23 +74,23 @@ RUN buildDeps='curl gcc make autoconf libc-dev zlib1g-dev pkg-config' \
     && rm -rf /etc/nginx/conf.d/default.conf \
     && sed -i -e "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g" ${php_conf} \
     && sed -i -e "s/memory_limit\s*=\s*.*/memory_limit = 256M/g" ${php_conf} \
-    && sed -i -e "s/upload_max_filesize\s*=\s*2M/upload_max_filesize = 100M/g" ${php_conf} \
-    && sed -i -e "s/post_max_size\s*=\s*8M/post_max_size = 100M/g" ${php_conf} \
+    && sed -i -e "s/upload_max_filesize\s*=\s*2M/upload_max_filesize = 20M/g" ${php_conf} \
+    && sed -i -e "s/post_max_size\s*=\s*8M/post_max_size = 32M/g" ${php_conf} \
     && sed -i -e "s/variables_order = \"GPCS\"/variables_order = \"EGPCS\"/g" ${php_conf} \
     && sed -i -e "s/;daemonize\s*=\s*yes/daemonize = no/g" /etc/php/7.4/fpm/php-fpm.conf \
     && sed -i -e "s/;catch_workers_output\s*=\s*yes/catch_workers_output = yes/g" ${fpm_conf} \
-    && sed -i -e "s/pm.max_children = 5/pm.max_children = 4/g" ${fpm_conf} \
-    && sed -i -e "s/pm.start_servers = 2/pm.start_servers = 3/g" ${fpm_conf} \
-    && sed -i -e "s/pm.min_spare_servers = 1/pm.min_spare_servers = 2/g" ${fpm_conf} \
-    && sed -i -e "s/pm.max_spare_servers = 3/pm.max_spare_servers = 4/g" ${fpm_conf} \
-    && sed -i -e "s/pm.max_requests = 500/pm.max_requests = 200/g" ${fpm_conf} \
+    && sed -i -e "s/pm.max_children = 5/pm.max_children = 20/g" ${fpm_conf} \
+    && sed -i -e "s/pm.start_servers = 2/pm.start_servers = 60/g" ${fpm_conf} \
+    && sed -i -e "s/pm.min_spare_servers = 1/pm.min_spare_servers = 30/g" ${fpm_conf} \
+    && sed -i -e "s/pm.max_spare_servers = 3/pm.max_spare_servers = 90/g" ${fpm_conf} \
+    && sed -i -e "s/pm.max_requests = 500/pm.max_requests = 256/g" ${fpm_conf} \
     && sed -i -e "s/www-data/nginx/g" ${fpm_conf} \
     && sed -i -e "s/^;clear_env = no$/clear_env = no/" ${fpm_conf} \
-    && echo "extension=redis.so" > /etc/php/7.4/mods-available/redis.ini \
+    #&& echo "extension=redis.so" > /etc/php/7.4/mods-available/redis.ini \
     && echo "extension=memcached.so" > /etc/php/7.4/mods-available/memcached.ini \
     && echo "extension=imagick.so" > /etc/php/7.4/mods-available/imagick.ini \
-    && ln -sf /etc/php/7.4/mods-available/redis.ini /etc/php/7.4/fpm/conf.d/20-redis.ini \
-    && ln -sf /etc/php/7.4/mods-available/redis.ini /etc/php/7.4/cli/conf.d/20-redis.ini \
+    #&& ln -sf /etc/php/7.4/mods-available/redis.ini /etc/php/7.4/fpm/conf.d/20-redis.ini \
+    #&& ln -sf /etc/php/7.4/mods-available/redis.ini /etc/php/7.4/cli/conf.d/20-redis.ini \
     && ln -sf /etc/php/7.4/mods-available/memcached.ini /etc/php/7.4/fpm/conf.d/20-memcached.ini \
     && ln -sf /etc/php/7.4/mods-available/memcached.ini /etc/php/7.4/cli/conf.d/20-memcached.ini \
     && ln -sf /etc/php/7.4/mods-available/imagick.ini /etc/php/7.4/fpm/conf.d/20-imagick.ini \
@@ -100,6 +106,9 @@ RUN rm -rf /tmp/pear \
     && apt-get purge -y --auto-remove $buildDeps \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# install ecs website
+RUN git clone git@github.com:g4-dev/src-ecs.git /tmp/src-ecs && cd /tmp/src-ecs && git reset --hard origin/master
+
 # Supervisor config
 ADD ./supervisord.conf /etc/supervisord.conf
 
@@ -107,7 +116,7 @@ ADD ./supervisord.conf /etc/supervisord.conf
 ADD ./default.conf /etc/nginx/conf.d/default.conf
 
 # Override default nginx welcome page
-COPY html /usr/share/nginx/html
+COPY /tmp/src-ecs /usr/share/nginx/html
 
 # Add Scripts
 ADD ./start.sh /start.sh
