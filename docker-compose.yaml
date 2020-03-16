@@ -1,4 +1,4 @@
-version: '3'
+version: '3.4'
 services:
   ecs:
     build: .
@@ -9,8 +9,17 @@ services:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
     container_name: ecs
+    networks:
+     - ecs_net 
   certbot:
     image: certbot/certbot
     volumes:
       - ./data/certbot/conf:/etc/letsencrypt
       - ./data/certbot/www:/var/www/certbot
+    networks:
+     - ecs_net 
+
+networks:
+  ecs_net:
+    name: ecs_net
+    driver: bridge
