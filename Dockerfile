@@ -116,7 +116,8 @@ echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.lis
 RUN apt-get install -y nodejs yarn
 
 # Override nginx's default config
-ADD ./services/nginx /etc/nginx/
+ADD ./services/nginx/nginx.conf /etc/nginx/
+RUN mkdir /etc/nginx/params
 
 # Override default nginx welcome page
 COPY html /usr/share/nginx/html
